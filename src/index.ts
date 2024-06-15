@@ -9,13 +9,23 @@ import {
 } from "./releaseVersion";
 import yargs from "yargs";
 
-function dev(copyPacksToMc: boolean): void {
+type BuildOptions = {
+  copyPacksToMc: boolean;
+  bundleScripts: boolean;
+};
+
+type ReleaseBuildOptions = BuildOptions & {
+  createZipArchive: boolean;
+  createMcadddonArchive: boolean;
+};
+
+function dev(buildOptions: BuildOptions): void {
   printWarn("Build started... (Dev)");
 
   printOkGreen("Build finished!");
 }
 
-function release(releaseVersion: ReleaseVersion, copyPacksToMc: boolean): void {
+function release(releaseVersion: ReleaseVersion, buildOptions: ReleaseBuildOptions): void {
   printWarn("Build started... (Release)");
 
   printOkGreen("Build finished!");
@@ -30,9 +40,17 @@ yargs.command({
       demandOption: false,
       type: "boolean",
     },
+    bundle: {
+      describe: "Choose whether to bundle and minify JavaScript script output files",
+      demandOption: false,
+      type: "boolean",
+    },
   },
   handler(argv) {
-    dev(argv.copytomc === true);
+    dev({
+      copyPacksToMc: argv.copytomc === true,
+      bundleScripts: argv.bundle === true,
+    });
   },
 });
 
@@ -56,6 +74,21 @@ yargs.command({
     },
     copytomc: {
       describe: "Choose whether to copy compiled packs to Minecraft",
+      demandOption: false,
+      type: "boolean",
+    },
+    bundle: {
+      describe: "Choose whether to bundle and minify JavaScript script output files",
+      demandOption: false,
+      type: "boolean",
+    },
+    createzip: {
+      describe: "Choose whether to create .zip archive of compiled packs",
+      demandOption: false,
+      type: "boolean",
+    },
+    createmcaddon: {
+      describe: "Choose whether to create .mcaddon archive of compiled packs",
       demandOption: false,
       type: "boolean",
     },
@@ -99,7 +132,12 @@ yargs.command({
 
     printOkCyan(`Successfully created version object: ${releaseVersion.toString()}`);
 
-    release(releaseVersion, argv.copytomc === true);
+    release(releaseVersion, {
+      copyPacksToMc: argv.copytomc === true,
+      bundleScripts: argv.bundle === true,
+      createZipArchive: argv.createzip === true,
+      createMcadddonArchive: argv.createmcaddon === true,
+    });
   },
 });
 
