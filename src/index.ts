@@ -60,6 +60,7 @@ yargs.command({
   builder: {
     ver: {
       describe: "Version as number array [Major, Minor, Patch]",
+      demandOption: true,
       type: "array",
     },
     stage: {
