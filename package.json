@@ -1,0 +1,25 @@
+{
+  "name": "lcbuild",
+  "author": "Lucked Coronet",
+  "description": "Simple Minecraft add-on compiler",
+  "license": "MIT",
+  "version": "0.1.0",
+  "bin": {
+    "lcbuild": "bin/lcbuild.js"
+  },
+  "scripts": {
+    "tsc": "tsc --noEmit",
+    "bundle": "esbuild ./src/index.ts --bundle --platform=node --external:yargs --outfile=./bin/lcbuild.js",
+    "build": "npm run tsc && npm run bundle",
+    "build_and_pack": "npm run build && npm pack --pack-destination ./packs/"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "esbuild": "^0.21.5",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@types/yargs": "^17.0.32",
+    "yargs": "^17.7.2"
+  }
+}
