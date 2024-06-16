@@ -4,7 +4,7 @@ const result = await esbuild.build({
   entryPoints: ["./src/index.ts"],
   bundle: true,
   platform: "node",
-  external: ["yargs", "glob", "esbuild"],
+  external: ["yargs", "glob", "esbuild", "fs-extra"],
   outfile: "./bin/lcbuild.js",
 });
 

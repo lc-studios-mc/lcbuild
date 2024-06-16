@@ -1,4 +1,4 @@
-import * as fs from "node:fs";
+import * as fs from "fs-extra";
 import * as path from "node:path";
 import { printOkGreen, printWarn } from "./printFunctions";
 import { v4 as uuidv4 } from "uuid";
