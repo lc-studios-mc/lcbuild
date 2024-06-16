@@ -7,8 +7,47 @@ import {
   VALID_RELEASE_STAGES,
   isStringValidReleaseStage,
 } from "./releaseVersion";
+import * as child_process from "node:child_process";
 import * as yargs from "yargs";
 import * as glob from "glob";
+import { MessageError } from "./errorTypes";
+
+namespace BuildFunctions {
+  function runCommand(
+    cmd: string,
+    args: string[],
+    options: child_process.SpawnOptionsWithoutStdio,
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const child = child_process.spawn(cmd, args, options);
+
+      let data = "";
+      child.stdout.on("data", (chunk: Buffer) => (data += chunk));
+      child.stderr.on("data", (chunk: Buffer) => (data += chunk));
+
+      child.on("close", (code: number) => {
+        if (code === 0) {
+          resolve(data);
+        } else {
+          reject(new Error(`Command exited with code ${code}: ${data}`));
+        }
+      });
+    });
+  }
+
+  export async function compileTypeScript(): Promise<void> {
+    print("Compiling TypeScript scripts...");
+
+    try {
+      await runCommand("tsc", ['--outDir "./temp"', "--noEmit false"], {
+        cwd: process.cwd(),
+        shell: true,
+      });
+    } catch (error) {
+      throw new MessageError(`Failed to compile TypeScript scripts.\n${error}`);
+    }
+  }
+}
 
 type BuildOptions = {
   copyPacksToMc: boolean;
@@ -22,6 +61,15 @@ type ReleaseBuildOptions = BuildOptions & {
 
 async function dev(buildOptions: BuildOptions): Promise<void> {
   printWarn("Build started... (Dev)");
+
+  try {
+    await BuildFunctions.compileTypeScript();
+  } catch (error) {
+    if (error instanceof MessageError) {
+      printError(error.message);
+      return;
+    }
+  }
 
   printOkGreen("Build finished!");
 }
