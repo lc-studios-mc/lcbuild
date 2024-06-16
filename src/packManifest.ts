@@ -26,7 +26,7 @@ export namespace PackManifest {
       "type": "script",
       "uuid": "<<<UUID_SCRIPT_MODULE>>>",
       "version": [<<<VERSION_SYSTEM>>>],
-      "entry": "scripts/main.js"
+      "entry": "scripts/index.js"
     }
   ],
   "dependencies": [
@@ -37,11 +37,11 @@ export namespace PackManifest {
     },
     {
       "module_name": "@minecraft/server",
-      "version": "1.12.0"
+      "version": "<<<SERVER_API_VERSION>>>", CONFIG_DATA.serverApiVersion
     },
     {
       "module_name": "@minecraft/server-ui",
-      "version": "1.1.0"
+      "version": "<<<SERVER_UI_API_VERSION>>>"
     }
   ]
 }
@@ -85,7 +85,9 @@ export namespace PackManifest {
       .replace(
         "<<<UUID_SCRIPT_MODULE>>>",
         CONFIG_DATA.devBuildBehaviorPackScriptModuleUuid.toString(),
-      );
+      )
+      .replace("<<<SERVER_API_VERSION>>>", CONFIG_DATA.serverApiVersion)
+      .replace("<<<SERVER_UI_API_VERSION>>>", CONFIG_DATA.serverUiApiVersion);
 
     const rpManifest = Template.RP.replace("<<<ADDON_NAME>>>", CONFIG_DATA.fullAddonName)
       .replace("<<<PACK_DESCRIPTION>>>", CONFIG_DATA.resourcePackHeaderDescription)
@@ -116,7 +118,9 @@ export namespace PackManifest {
       .replace("<<<UUID_HEADER>>>", uuidBpHeader)
       .replace("<<<UUID_MODULE>>>", uuidBpModule)
       .replace("<<<UUID_SCRIPT_MODULE>>>", uuidBpScript)
-      .replace("<<<UUID_RP_HEADER>>>", uuidRpHeader);
+      .replace("<<<UUID_RP_HEADER>>>", uuidRpHeader)
+      .replace("<<<SERVER_API_VERSION>>>", CONFIG_DATA.serverApiVersion)
+      .replace("<<<SERVER_UI_API_VERSION>>>", CONFIG_DATA.serverUiApiVersion);
 
     const rpManifest = Template.RP.replace("<<<ADDON_NAME>>>", CONFIG_DATA.fullAddonName)
       .replace("<<<PACK_DESCRIPTION>>>", CONFIG_DATA.resourcePackHeaderDescription)

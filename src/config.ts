@@ -19,6 +19,8 @@ export type ConfigData = {
   devBuildResourcePackModuleUuid: string;
 
   minEngineVersion: number[];
+  serverApiVersion: string;
+  serverUiApiVersion: string;
 
   ignoreOnCompile: string[];
   externalModules: string[];
@@ -43,6 +45,8 @@ function getDefaultConfigData(): ConfigData {
     devBuildResourcePackModuleUuid: uuidv4(),
 
     minEngineVersion: [1, 21, 0],
+    serverApiVersion: "1.12.0",
+    serverUiApiVersion: "1.1.0",
 
     ignoreOnCompile: ["**/*.gitignore", "**/*.gitkeep", "**/*.psd", "**/*.bbmodel", "**/bbmodels"],
     externalModules: ["@minecraft"],
@@ -50,7 +54,7 @@ function getDefaultConfigData(): ConfigData {
 }
 
 function saveConfig(data: ConfigData): void {
-  let json = JSON.stringify(data, null, 2);
+  const json = JSON.stringify(data, null, 2);
 
   fs.writeFileSync(CONFIG_FILE_PATH, json + "\n", { encoding: "utf-8" });
 }
@@ -73,8 +77,6 @@ ${JSON.stringify(data, null, 2)}
   let readData: {} = JSON.parse(json);
 
   Object.assign(data, readData);
-
-  saveConfig(data);
 
   printOkGreen(`Loaded config file at ${CONFIG_FILE_PATH}`);
 

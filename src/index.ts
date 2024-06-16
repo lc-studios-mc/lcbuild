@@ -8,9 +8,14 @@ import {
   isStringValidReleaseStage,
 } from "./releaseVersion";
 import * as child_process from "node:child_process";
+import * as path from "node:path";
+import * as fs from "fs-extra";
 import * as yargs from "yargs";
 import * as glob from "glob";
+import * as esbuild from "esbuild";
 import { MessageError } from "./errorTypes";
+import { ProjectPaths } from "./projectPaths";
+import { CONFIG_DATA } from "./config";
 
 namespace BuildFunctions {
   function runCommand(
@@ -39,12 +44,34 @@ namespace BuildFunctions {
     print("Compiling TypeScript scripts...");
 
     try {
+      if (!(await fs.exists(path.join(ProjectPaths.SRC_SCRIPTS_DIR, "main.ts")))) {
+        throw new Error("No TypeScript file named main.ts is in the src scripts directory");
+      }
+
       await runCommand("tsc", ['--outDir "./temp"', "--noEmit false"], {
         cwd: process.cwd(),
         shell: true,
       });
     } catch (error) {
       throw new MessageError(`Failed to compile TypeScript scripts.\n${error}`);
+    }
+  }
+
+  export async function bundleScriptsInTempDir(): Promise<void> {
+    print("Bundling scripts...");
+
+    try {
+      await esbuild.build({
+        entryPoints: [path.join(ProjectPaths.TEMP_DIR, "main.js")],
+        external: CONFIG_DATA.externalModules,
+        bundle: true,
+        minify: true,
+        format: "esm",
+        allowOverwrite: true,
+        outfile: path.join(ProjectPaths.TEMP_DIR, "main.js"),
+      });
+    } catch (error) {
+      throw new MessageError(`Failed to bundle scripts.\n${error}`);
     }
   }
 }
@@ -64,6 +91,10 @@ async function dev(buildOptions: BuildOptions): Promise<void> {
 
   try {
     await BuildFunctions.compileTypeScript();
+
+    if (buildOptions.bundleScripts) {
+      await BuildFunctions.bundleScriptsInTempDir();
+    }
   } catch (error) {
     if (error instanceof MessageError) {
       printError(error.message);
