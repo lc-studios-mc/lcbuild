@@ -129,7 +129,7 @@ yargs.command({
   command: "dev",
   describe: "Compiles the addon in dev mode",
   builder: {
-    copytomc: {
+    "copy-to-mc": {
       describe: "Choose whether to copy compiled packs to Minecraft",
       demandOption: false,
       type: "boolean",
@@ -142,7 +142,7 @@ yargs.command({
   },
   handler(argv) {
     dev({
-      copyPacksToMc: argv.copytomc === true,
+      copyPacksToMc: argv["copy-to-mc"] === true,
       bundleScripts: argv.bundle === true,
     });
   },
@@ -167,7 +167,7 @@ yargs.command({
       demandOption: false,
       type: "number",
     },
-    copytomc: {
+    "copy-to-mc": {
       describe: "Choose whether to copy compiled packs to Minecraft",
       demandOption: false,
       type: "boolean",
@@ -177,12 +177,12 @@ yargs.command({
       demandOption: false,
       type: "boolean",
     },
-    createzip: {
+    "create-zip": {
       describe: "Choose whether to create .zip archive of compiled packs",
       demandOption: false,
       type: "boolean",
     },
-    createmcaddon: {
+    "create-mcaddon": {
       describe: "Choose whether to create .mcaddon archive of compiled packs",
       demandOption: false,
       type: "boolean",
@@ -228,10 +228,10 @@ yargs.command({
     printOkCyan(`Successfully created version object: ${releaseVersion.toString()}`);
 
     release(releaseVersion, {
-      copyPacksToMc: argv.copytomc === true,
+      copyPacksToMc: argv["copy-to-mc"] === true,
       bundleScripts: argv.bundle === true,
-      createZipArchive: argv.createzip === true,
-      createMcadddonArchive: argv.createmcaddon === true,
+      createZipArchive: argv["create-zip"] === true,
+      createMcadddonArchive: argv["create-mcaddon"] === true,
     });
   },
 });
