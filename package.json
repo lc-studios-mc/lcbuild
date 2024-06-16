@@ -2,8 +2,21 @@
   "name": "lcbuild",
   "author": "Lucked Coronet",
   "description": "Simple Minecraft add-on compiler",
+  "keywords": [
+    "minecraft",
+    "tools",
+    "typescript",
+    "esbuild",
+    "compiler",
+    "bundler"
+  ],
   "license": "MIT",
   "version": "0.1.0",
+  "homepage": "https://github.com/LuckedCoronet/lcbuild/blob/main/README.md",
+  "bugs": {
+    "url": "https://github.com/LuckedCoronet/lcbuild/issues",
+    "email": "lc45@lc-studios.net"
+  },
   "bin": {
     "lcbuild": "bin/lcbuild.js"
   },
