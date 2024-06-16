@@ -7,7 +7,8 @@ import {
   VALID_RELEASE_STAGES,
   isStringValidReleaseStage,
 } from "./releaseVersion";
-import yargs from "yargs";
+import * as yargs from "yargs";
+import * as glob from "glob";
 
 type BuildOptions = {
   copyPacksToMc: boolean;
