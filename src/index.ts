@@ -48,10 +48,14 @@ namespace BuildFunctions {
         throw new Error("No TypeScript file named main.ts is in the src scripts directory");
       }
 
-      await runCommand("tsc", ['--outDir "./temp"', "--noEmit false"], {
-        cwd: process.cwd(),
-        shell: true,
-      });
+      await runCommand(
+        "tsc",
+        [`--outDir "./temp/${CONFIG_DATA.behaviorPackDirectoryName}/scripts/"`, "--noEmit false"],
+        {
+          cwd: process.cwd(),
+          shell: true,
+        },
+      );
     } catch (error) {
       throw new MessageError(`Failed to compile TypeScript scripts.\n${error}`);
     }
@@ -62,7 +66,14 @@ namespace BuildFunctions {
 
     try {
       await esbuild.build({
-        entryPoints: [path.join(ProjectPaths.TEMP_DIR, "main.js")],
+        entryPoints: [
+          path.join(
+            ProjectPaths.TEMP_DIR,
+            CONFIG_DATA.behaviorPackDirectoryName,
+            "scripts",
+            "main.js",
+          ),
+        ],
         external: CONFIG_DATA.externalModules,
         bundle: true,
         minify: true,
