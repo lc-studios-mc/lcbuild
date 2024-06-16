@@ -20,13 +20,16 @@ type ReleaseBuildOptions = BuildOptions & {
   createMcadddonArchive: boolean;
 };
 
-function dev(buildOptions: BuildOptions): void {
+async function dev(buildOptions: BuildOptions): Promise<void> {
   printWarn("Build started... (Dev)");
 
   printOkGreen("Build finished!");
 }
 
-function release(releaseVersion: ReleaseVersion, buildOptions: ReleaseBuildOptions): void {
+async function release(
+  releaseVersion: ReleaseVersion,
+  buildOptions: ReleaseBuildOptions,
+): Promise<void> {
   printWarn("Build started... (Release)");
 
   printOkGreen("Build finished!");
