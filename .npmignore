@@ -4,4 +4,5 @@ packs/
 src/
 
 .prettierrc
+build.mjs
 tsconfig.json
