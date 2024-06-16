@@ -19,6 +19,8 @@ export type ConfigData = {
   devBuildResourcePackModuleUuid: string;
 
   minEngineVersion: number[];
+
+  ignoreOnCompile: string[];
 };
 
 const CONFIG_FILE_PATH = path.join(process.cwd(), "lcbuild-config.json");
@@ -40,6 +42,8 @@ function getDefaultConfigData(): ConfigData {
     devBuildResourcePackModuleUuid: uuidv4(),
 
     minEngineVersion: [1, 21, 0],
+
+    ignoreOnCompile: ["**/*.gitignore", "**/*.gitkeep", "**/*.psd", "**/*.bbmodel", "**/bbmodels"],
   };
 }
 
