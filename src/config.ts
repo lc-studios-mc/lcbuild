@@ -21,7 +21,7 @@ export type ConfigData = {
   minEngineVersion: number[];
 
   ignoreOnCompile: string[];
-  bundleExternalModules: string[];
+  externalModules: string[];
 };
 
 const CONFIG_FILE_PATH = path.join(process.cwd(), "lcbuild-config.json");
@@ -45,7 +45,7 @@ function getDefaultConfigData(): ConfigData {
     minEngineVersion: [1, 21, 0],
 
     ignoreOnCompile: ["**/*.gitignore", "**/*.gitkeep", "**/*.psd", "**/*.bbmodel", "**/bbmodels"],
-    bundleExternalModules: ["@minecraft"],
+    externalModules: ["@minecraft"],
   };
 }
 
