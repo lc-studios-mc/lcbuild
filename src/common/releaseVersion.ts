@@ -6,6 +6,14 @@ export const VALID_RELEASE_STAGES = {
   stable: null,
 } as const;
 
+export const VALID_RELEASE_STAGE_ARRAY: (keyof typeof VALID_RELEASE_STAGES)[] = [
+  "prealpha",
+  "alpha",
+  "beta",
+  "rc",
+  "stable",
+];
+
 export type ReleaseStage = keyof typeof VALID_RELEASE_STAGES;
 
 export class ReleaseVersion {
