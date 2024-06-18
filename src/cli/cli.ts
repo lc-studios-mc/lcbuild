@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
-import { ReleaseStage, ReleaseVersion, VALID_RELEASE_STAGE_ARRAY } from "../common/releaseVersion";
-import { startBuildDev, startBuildRelease } from "../lcbuild/lcbuild";
+import {
+  ReleaseStage,
+  ReleaseVersion,
+  VALID_RELEASE_STAGE_ARRAY,
+} from "../common/releaseVersion.js";
+import { buildDev, buildRelease } from "../lcbuild/lcbuild.js";
 import * as yargs from "yargs";
 
 yargs.command({
@@ -20,7 +24,7 @@ yargs.command({
     },
   },
   handler(argv) {
-    startBuildDev({
+    buildDev({
       bundleScripts: argv.bundleScripts === true,
       copyToMc: argv.copyToMc === true,
     });
@@ -62,7 +66,7 @@ yargs.command({
     },
   },
   handler(argv) {
-    startBuildRelease({
+    buildRelease({
       bundleScripts: argv.bundleScripts === true,
       copyToMc: argv.copyToMc === true,
       releaseVersion: new ReleaseVersion(

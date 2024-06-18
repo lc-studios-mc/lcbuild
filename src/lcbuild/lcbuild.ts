@@ -1,14 +1,13 @@
-import { MessageError } from "../common/errorTypes";
-import { ReleaseVersion } from "../common/releaseVersion";
-import * as projectPaths from "../common/projectPaths";
-import { CONFIG_DATA } from "../common/config";
+import { MessageError } from "../common/errorTypes.js";
+import { ReleaseVersion } from "../common/releaseVersion.js";
+import * as projectPaths from "../common/projectPaths.js";
+import { CONFIG_DATA } from "../common/config.js";
+import { print, printError, printOkGreen, printWarn } from "../common/printFunctions.js";
 import * as child_process from "node:child_process";
 import * as path from "node:path";
 import * as fs from "fs-extra";
 import * as esbuild from "esbuild";
 import soundplayer from "play-sound";
-import { LOGGER } from "../logger";
-import { print, printError, printOkGreen, printWarn } from "../common/printFunctions";
 
 export type BuildOptions = {
   bundleScripts: boolean;
@@ -75,7 +74,7 @@ ${error}`);
   }
 }
 
-export async function startBuildDev(buildOptions: BuildOptions): Promise<void> {
+export async function buildDev(buildOptions: BuildOptions): Promise<void> {
   printWarn("Build started... (DEV)");
 
   try {
@@ -101,4 +100,4 @@ export async function startBuildDev(buildOptions: BuildOptions): Promise<void> {
   printOkGreen("Build finished!");
 }
 
-export async function startBuildRelease(buildOptions: ReleaseBuildOptions): Promise<void> {}
+export async function buildRelease(buildOptions: ReleaseBuildOptions): Promise<void> {}
