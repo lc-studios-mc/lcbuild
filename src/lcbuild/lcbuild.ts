@@ -7,7 +7,6 @@ import * as child_process from "node:child_process";
 import * as path from "node:path";
 import * as fs from "fs-extra";
 import * as esbuild from "esbuild";
-import soundplayer from "play-sound";
 
 export type BuildOptions = {
   bundleScripts: boolean;
@@ -94,8 +93,6 @@ export async function buildDev(buildOptions: BuildOptions): Promise<void> {
       return;
     }
   }
-
-  soundplayer().play("C:\\Windows\\Media\\Windows Background.wav");
 
   printOkGreen("Build finished!");
 }
