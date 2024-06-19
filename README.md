@@ -1,5 +1,7 @@
 # LCBuild
 
+LCBuild is a Minecraft addon compiler that you can use through commands.
+
 A quick overview of what you can achieve with LCBuild:
 
 - TypeScript support
@@ -25,9 +27,11 @@ npm i typescript -g
   - [Why use LCBuild](#why-use-lcbuild)
   - [Installation](#installation)
     - [Config properties](#config-properties)
-  - [Useful commands](#useful-commands)
+  - [Commands](#commands)
     - [Create development build](#create-development-build)
+      - [Arguments](#arguments)
     - [Create release build](#create-release-build)
+      - [Arguments](#arguments-1)
   - [History of LCBuild](#history-of-lcbuild)
   - [Contributing](#contributing)
   - [License](#license)
@@ -44,9 +48,9 @@ With LCBuild, you can say goodbye to those nightmares!
 
 **BEFORE YOU INSTALL:** please read the [prerequisites](#prerequisites)
 
-First, create a folder somewhere on your drive (C:\ or not does not matter) and open it in terminal.
+***First***, create a folder somewhere on your drive (C:\ or not does not matter) and open it in terminal.
 
-Second, run the command:
+***Second***, run the command:
 
 ```sh
 npm init -y
@@ -55,7 +59,7 @@ npm i @minecraft/server@latest @minecraft/server-ui@latest --save-exact
 tsc --init
 ```
 
-Third, run the command:
+***Third***, run the command:
 
 ```sh
 npx lcbuild
@@ -63,7 +67,23 @@ npx lcbuild
 
 This will generate a folder named ".lcbuild" in your project folder, which contains files used by LCBuild.
 
-Fourth, open **config.json** inside .lcbuild and change properties to your preferences.
+***Fourth***, open **config.json** inside .lcbuild and change properties to your preferences. See [Config properties](#config-properties) for details.
+
+***Fifth***, create src folder and make its structure identical to this:
+
+```
+Project Root
+├── src
+│   ├── packs
+│   │   ├── (Behavior pack folder)
+│   │   │   └── (Behavior pack files and folders)
+│   │   └── (Resource pack folder)
+│   │       └── (Resource pack files and folders)
+│   └── scripts
+│       ├── main.ts
+│       └── (Script files)
+└── (Other files and folders)
+```
 
 ### Config properties
 
@@ -76,11 +96,41 @@ Fourth, open **config.json** inside .lcbuild and change properties to your prefe
 - `entryScriptFileName` [string] - Name of the main script file without extension (for example, "main")
 - `compilationIgnorePatterns` - List of glob patterns to exclude from pack compilation
 
-## Useful commands
+## Commands
+
+Run ``npx lcbuild --help`` see list of commands.
 
 ### Create development build
 
+Example
+
+```sh
+npx lcbuild dev
+```
+
+#### Arguments
+
+- `--bundleScripts` `-b` - Choose whether to bundle scripts
+- `--minifyBundle` `-m` - Choose whether to minify bundled scripts when `--bundleScripts` flag is set to true
+- `--copyToMc` `-c` - Choose whether to copy compiled packs to *development_behavior_packs* and *development_resource_packs* after the build process is finished
+
+
 ### Create release build
+
+Example
+
+```sh
+npx lcbuild release --v 1 0 0 --s stable --i 1
+```
+
+#### Arguments
+
+- `--bundleScripts` `-b` - Choose whether to bundle scripts
+- `--minifyBundle` `-m` - Choose whether to minify bundled scripts when `--bundleScripts` flag is set to true
+- `--copyToMc` `-c` - Choose whether to copy compiled packs to *development_behavior_packs* and *development_resource_packs* after the build process is finished
+- `--releaseVersion` `-v` - Set release version in MAJOR MINOR PATCH format
+- `--releaseStage` `-s` - Set release stage ("prealpha", "alpha", "beta", "rc", or "stable")
+- `--releaseIteration` `-i` - Set release iteration/index as number
 
 ## History of LCBuild
 

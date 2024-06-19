@@ -14,16 +14,19 @@ yargs.command({
   describe: "Build packs in dev mode",
   builder: {
     bundleScripts: {
+      alias: "b",
       description: "Choose whether to bundle scripts into a single file",
       type: "boolean",
       default: false,
     },
     minifyBundle: {
+      alias: "m",
       description: "Choose whether to minify scripts when --bundleScripts is set to true",
       type: "boolean",
       default: false,
     },
     copyToMc: {
+      alias: "c",
       description: "Choose whether to copy build to local Minecraft directory",
       type: "boolean",
       default: false,
@@ -43,16 +46,19 @@ yargs.command({
   describe: "Build packs in release mode",
   builder: {
     bundleScripts: {
+      alias: "b",
       description: "Choose whether to bundle scripts into a single file",
       type: "boolean",
       default: false,
     },
     minifyBundle: {
+      alias: "m",
       description: "Choose whether to minify scripts when --bundleScripts is set to true",
       type: "boolean",
       default: false,
     },
     copyToMc: {
+      alias: "c",
       description: "Choose whether to copy build to local Minecraft directory",
       type: "boolean",
       default: false,
