@@ -54,7 +54,7 @@ With LCBuild, you can say goodbye to those nightmares!
 
 ```sh
 npm init -y
-npm i @lc-studio/lcbuild typescript --save-dev
+npm i @luckedcoronet/lcbuild typescript --save-dev
 npm i @minecraft/server@latest @minecraft/server-ui@latest --save-exact
 tsc --init
 ```
