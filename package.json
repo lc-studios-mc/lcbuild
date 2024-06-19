@@ -40,14 +40,14 @@
     "@types/node": "^20.14.2",
     "@types/play-sound": "^1.1.2",
     "@types/uuid": "^9.0.8",
-    "@types/yargs": "^17.0.32"
+    "@types/yargs": "^17.0.32",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "esbuild": "^0.21.5",
     "fs-extra": "^11.2.0",
     "ignore": "^5.3.1",
     "pino": "^9.2.0",
-    "typescript": "^5.4.5",
     "uuid": "^10.0.0",
     "yargs": "^17.7.2"
   }
