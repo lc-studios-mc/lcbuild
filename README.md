@@ -9,7 +9,7 @@ A quick overview of what you can achieve with LCBuild:
 
 ## Prerequisites
 
-LCBuild only runs on Windows 10/11 and requires [Node.js]((http://nodejs.org/)) version 14 or later. 
+LCBuild **only works on Windows 10/11** and requires [Node.js]((http://nodejs.org/)) version 14 or later. 
 
 Make sure TypeScript is installed globally via npm:
 
@@ -29,6 +29,8 @@ npm i typescript -g
     - [Create development build](#create-development-build)
     - [Create release build](#create-release-build)
   - [History of LCBuild](#history-of-lcbuild)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Why use LCBuild
 
@@ -65,9 +67,14 @@ Fourth, open **config.json** inside .lcbuild and change properties to your prefe
 
 ### Config properties
 
-- `minecraftComMojangDirectoryPath` - Path to com.mojang folder
-- `fullAddonName` - Full name of your addon
-- 
+- `minecraftComMojangDirectoryPath` [string] - Full path of com.mojang folder
+- `fullAddonName` [string] - Full name of your addon (for example, "MyUntitledAddon")
+- `shortAddonName` [string] - Short name of your addon (for example, "MUA")
+- `behaviorPackDirectoryName` [string] - Name of the behavior pack directory name in src
+- `resourcePackDirectoryName` [string] - Name of the resource pack directory name in src
+- `externalModules` [string array] - List of modules/packages to be ignored by the bundler (it must contain "@minecraft")
+- `entryScriptFileName` [string] - Name of the main script file without extension (for example, "main")
+- `compilationIgnorePatterns` - List of glob patterns to exclude from pack compilation
 
 ## Useful commands
 
@@ -80,3 +87,13 @@ Fourth, open **config.json** inside .lcbuild and change properties to your prefe
 This is how I was developing my addon in early 2023: *3 git repositories (one for behavior pack, one for resource pack, another one for scripts), 3 VSCode windows opened at same time, and manually copying script folder every time I compile them.*
 
 After I realized that it was super unproductive, I made a Python script to automate those tedious tasks. It was fine but not ideal, because I write Minecraft scripts in TypeScript. So, I decided to rewrite it in Node.js and named it LCBuild.
+
+## Contributing
+
+LCBuild is an open-source project.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
+
+## License
+
+Licensed under [MIT](./LICENSE)

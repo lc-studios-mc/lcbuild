@@ -7,4 +7,6 @@ src/
 .prettierrc
 build.mjs
 CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
 tsconfig.json
