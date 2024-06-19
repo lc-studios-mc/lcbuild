@@ -1,5 +1,5 @@
 {
-  "name": "lcbuild",
+  "name": "@lc-studio/lcbuild",
   "author": "Lucked Coronet",
   "description": "Minecraft addon compiler",
   "license": "MIT",
@@ -17,6 +17,17 @@
     "compiler",
     "bundler"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LuckedCoronet/lcbuild.git"
+  },
+  "engines": {
+  "node": ">= 14.17"
+  },
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "bin": {
     "lcbuild": "./dist/cli/cli.js"
   },

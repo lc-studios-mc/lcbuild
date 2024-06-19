@@ -3,7 +3,7 @@ import * as esbuild from "esbuild";
 
 console.log("Build started...");
 
-child_process.execSync("tsc", {
+child_process.execSync("npx tsc", {
   cwd: process.cwd(),
   shell: true,
 });
