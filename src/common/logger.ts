@@ -1,6 +1,6 @@
 import pino from "pino";
 import * as path from "node:path";
-import * as projectPaths from "./common/projectPaths";
+import * as projectPaths from "./projectPaths.js";
 
 export const LOGGER = pino({
   transport: {

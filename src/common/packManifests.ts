@@ -1,9 +1,9 @@
 import * as path from "node:path";
 import * as fs from "fs-extra";
-import * as projectPaths from "./projectPaths";
+import * as projectPaths from "./projectPaths.js";
 import { v4 as uuidv4 } from "uuid";
-import { printOkCyan } from "./printFunctions";
-import { ReleaseVersion } from "./releaseVersion";
+import { printOkCyan } from "./printFunctions.js";
+import { ReleaseVersion } from "./releaseVersion.js";
 
 type ManifestCreationReturnObject = {
   bp: string;
@@ -83,7 +83,7 @@ const MANIFEST_TEMPLATE_BP_RELEASE_FILE = path.join(
 );
 const MANIFEST_TEMPLATE_RP_RELEASE_FILE = path.join(
   projectPaths.MANIFEST_TEMPLATES_DIR,
-  "release-bp.json",
+  "release-rp.json",
 );
 
 function ensureFiles(): void {
@@ -99,17 +99,17 @@ function ensureFiles(): void {
     const uuidRpHeader = uuidv4();
     const uuidRpModule = uuidv4();
 
-    const manifestBp = DefaultTemplates.BP.replace("<<<UUID_HEADER>>>", uuidBpHeader)
-      .replace("<<<UUID_MODULE>>>", uuidBpModule)
-      .replace("<<<UUID_SCRIPT>>>", uuidBpScript)
-      .replace("<<<UUID_RP_HEADER>>>", uuidRpHeader)
-      .replace("<<<VERSION_SYSTEM>>>", "1,0,0")
-      .replace("<<<VERSION_HUMAN>>>", "DEV");
+    const manifestBp = DefaultTemplates.BP.replaceAll("<<<UUID_HEADER>>>", uuidBpHeader)
+      .replaceAll("<<<UUID_MODULE>>>", uuidBpModule)
+      .replaceAll("<<<UUID_SCRIPT>>>", uuidBpScript)
+      .replaceAll("<<<UUID_RP_HEADER>>>", uuidRpHeader)
+      .replaceAll("<<<VERSION_SYSTEM>>>", "1,0,0")
+      .replaceAll("<<<VERSION_HUMAN>>>", "DEV");
 
-    const manifestRp = DefaultTemplates.RP.replace("<<<UUID_HEADER>>>", uuidRpHeader)
-      .replace("<<<UUID_MODULE>>>", uuidRpModule)
-      .replace("<<<VERSION_SYSTEM>>>", "1,0,0")
-      .replace("<<<VERSION_HUMAN>>>", "DEV");
+    const manifestRp = DefaultTemplates.RP.replaceAll("<<<UUID_HEADER>>>", uuidRpHeader)
+      .replaceAll("<<<UUID_MODULE>>>", uuidRpModule)
+      .replaceAll("<<<VERSION_SYSTEM>>>", "1,0,0")
+      .replaceAll("<<<VERSION_HUMAN>>>", "DEV");
 
     if (!manifestTemplateBpDevExists) {
       fs.writeFileSync(MANIFEST_TEMPLATE_BP_DEV_FILE, manifestBp, { encoding: "utf-8" });
@@ -162,19 +162,19 @@ export function createPackManifestsRelease(
 
   const manifestBp = fs
     .readFileSync(MANIFEST_TEMPLATE_BP_RELEASE_FILE, { encoding: "utf-8" })
-    .replace("<<<UUID_HEADER>>>", uuidBpHeader)
-    .replace("<<<UUID_MODULE>>>", uuidBpModule)
-    .replace("<<<UUID_SCRIPT>>>", uuidBpScript)
-    .replace("<<<UUID_RP_HEADER>>>", uuidRpHeader)
-    .replace("<<<VERSION_SYSTEM>>>", releaseVersion.toArray().toString())
-    .replace("<<<VERSION_HUMAN>>>", releaseVersion.toString());
+    .replaceAll("<<<UUID_HEADER>>>", uuidBpHeader)
+    .replaceAll("<<<UUID_MODULE>>>", uuidBpModule)
+    .replaceAll("<<<UUID_SCRIPT>>>", uuidBpScript)
+    .replaceAll("<<<UUID_RP_HEADER>>>", uuidRpHeader)
+    .replaceAll("<<<VERSION_SYSTEM>>>", releaseVersion.toArray().toString())
+    .replaceAll("<<<VERSION_HUMAN>>>", releaseVersion.toString());
 
   const manifestRp = fs
     .readFileSync(MANIFEST_TEMPLATE_RP_RELEASE_FILE, { encoding: "utf-8" })
-    .replace("<<<UUID_HEADER>>>", uuidRpHeader)
-    .replace("<<<UUID_MODULE>>>", uuidRpModule)
-    .replace("<<<VERSION_SYSTEM>>>", releaseVersion.toArray().toString())
-    .replace("<<<VERSION_HUMAN>>>", releaseVersion.toString());
+    .replaceAll("<<<UUID_HEADER>>>", uuidRpHeader)
+    .replaceAll("<<<UUID_MODULE>>>", uuidRpModule)
+    .replaceAll("<<<VERSION_SYSTEM>>>", releaseVersion.toArray().toString())
+    .replaceAll("<<<VERSION_HUMAN>>>", releaseVersion.toString());
 
   return {
     bp: manifestBp,

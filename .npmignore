@@ -1,9 +1,10 @@
 .vscode/
+.idea/
 node_modules/
 packs/
 src/
 
 .prettierrc
+build.mjs
 CHANGELOG.md
 tsconfig.json
-tsconfig-lib.json

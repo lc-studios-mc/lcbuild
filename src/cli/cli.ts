@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import "../common/projectPaths";
 import {
   ReleaseStage,
   ReleaseVersion,
@@ -17,6 +18,11 @@ yargs.command({
       type: "boolean",
       default: false,
     },
+    minifyBundle: {
+      description: "Choose whether to minify scripts when --bundleScripts is set to true",
+      type: "boolean",
+      default: false,
+    },
     copyToMc: {
       description: "Choose whether to copy build to local Minecraft directory",
       type: "boolean",
@@ -26,6 +32,7 @@ yargs.command({
   handler(argv) {
     buildDev({
       bundleScripts: argv.bundleScripts === true,
+      minifyBundle: argv.minifyBundle === true,
       copyToMc: argv.copyToMc === true,
     });
   },
@@ -37,6 +44,11 @@ yargs.command({
   builder: {
     bundleScripts: {
       description: "Choose whether to bundle scripts into a single file",
+      type: "boolean",
+      default: false,
+    },
+    minifyBundle: {
+      description: "Choose whether to minify scripts when --bundleScripts is set to true",
       type: "boolean",
       default: false,
     },
@@ -68,6 +80,7 @@ yargs.command({
   handler(argv) {
     buildRelease({
       bundleScripts: argv.bundleScripts === true,
+      minifyBundle: argv.minifyBundle === true,
       copyToMc: argv.copyToMc === true,
       releaseVersion: new ReleaseVersion(
         [
