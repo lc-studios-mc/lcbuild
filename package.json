@@ -3,7 +3,7 @@
   "author": "Lucked Coronet",
   "description": "Minecraft addon compiler",
   "license": "MIT",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "homepage": "https://github.com/LuckedCoronet/lcbuild/blob/main/README.md",
   "bugs": {
     "url": "https://github.com/LuckedCoronet/lcbuild/issues",
