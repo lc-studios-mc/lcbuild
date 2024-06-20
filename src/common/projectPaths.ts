@@ -9,12 +9,6 @@ export const MANIFEST_TEMPLATES_DIR = path.join(LCBUILD_DIR, "manifest_templates
 fs.ensureDirSync(LCBUILD_DIR);
 fs.ensureDirSync(MANIFEST_TEMPLATES_DIR);
 
-const GITIGNORE_FILE = path.join(LCBUILD_DIR, ".gitignore");
-
-if (!fs.existsSync(GITIGNORE_FILE)) {
-  fs.writeFileSync(GITIGNORE_FILE, `logs/\n`, { encoding: "utf-8" });
-}
-
 import { CONFIG_DATA } from "./config.js";
 
 export const SRC_DIR = path.join(PROJ_DIR, "src");

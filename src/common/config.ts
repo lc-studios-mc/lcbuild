@@ -2,7 +2,6 @@ import * as fs from "fs-extra";
 import * as path from "node:path";
 import * as os from "node:os";
 import * as projectPaths from "./projectPaths.js";
-import { LOGGER } from "./logger.js";
 import { printOkCyan, printWarn } from "./printFunctions.js";
 
 export type ConfigData = {
@@ -48,8 +47,6 @@ function saveConfig(data: ConfigData): void {
   const json = JSON.stringify(data, null, 2);
 
   fs.writeFileSync(CONFIG_FILE_PATH, json + "\n", { encoding: "utf-8" });
-
-  LOGGER.info(`Saved config file at ${CONFIG_FILE_PATH}`);
 }
 
 function loadConfig(): ConfigData {

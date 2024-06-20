@@ -9,6 +9,7 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import * as esbuild from "esbuild";
 import ignore from "ignore";
+import playsound from "play-sound";
 
 export type BuildOptions = {
   bundleScripts: boolean;
@@ -261,6 +262,16 @@ export async function buildDev(buildOptions: BuildOptions): Promise<void> {
 
     printOkGreen(`Build finished!`);
     printOkGreen(`Done in ${timeEnd - timeStart}ms`);
+
+    // Play sound to notify users about that the task is complete
+
+    await runCommand(
+      "powershell",
+      ['-c (New-Object Media.SoundPlayer "C:\\Windows\\Media\\notify.wav").PlaySync();'],
+      {
+        shell: true,
+      },
+    );
   } catch (error) {
     if (error instanceof MessageError) {
       printError(`${error}`);
