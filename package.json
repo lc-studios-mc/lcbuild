@@ -22,7 +22,7 @@
     "url": "https://github.com/LuckedCoronet/lcbuild.git"
   },
   "engines": {
-    "node": ">= 14.17"
+    "node": ">= 14.14"
   },
   "main": "./dist/index.js",
   "exports": {
