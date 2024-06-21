@@ -9,7 +9,7 @@ import * as path from "node:path";
 import * as fs from "fs-extra";
 import * as esbuild from "esbuild";
 import ignore from "ignore";
-import playsound from "play-sound";
+import { replaceTscAliasPaths } from "tsc-alias";
 
 export type BuildOptions = {
   bundleScripts: boolean;
@@ -106,6 +106,10 @@ async function compileTypeScript(): Promise<void> {
     await runCommand("tsc", ["--noEmit false", `--outDir ${projectPaths.TEMP_SCRIPTS_DIR}`], {
       cwd: projectPaths.PROJ_DIR,
       shell: true,
+    });
+
+    await replaceTscAliasPaths({
+      outDir: projectPaths.TEMP_SCRIPTS_DIR,
     });
   } catch (error) {
     throw new MessageError(`Failed to compile TypeScript files.
