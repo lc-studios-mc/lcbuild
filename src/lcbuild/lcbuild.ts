@@ -233,7 +233,7 @@ async function copyTempPacksToMinecraft(): Promise<void> {
     force: true,
   });
 
-  await copyDirectory(projectPaths.TEMP_BP_DIR, rpDest, []);
+  await copyDirectory(projectPaths.TEMP_RP_DIR, rpDest, []);
 }
 
 export async function buildDev(buildOptions: BuildOptions): Promise<void> {
