@@ -566,7 +566,11 @@ Using default template instead.${Colors.Reset}`,
 }
 
 export function buildSync(buildOptions?: BuildOptions): void {
-  buildOptions = buildOptions ? buildOptions : DEFAULT_BUILD_OPTIONS;
+  buildOptions = buildOptions
+    ? Object.assign(structuredClone(DEFAULT_BUILD_OPTIONS), buildOptions)
+    : DEFAULT_BUILD_OPTIONS;
+
+  const startTime = Date.now();
 
   const processUuid = uuidv4();
   const processTempDir = path.join(os.tmpdir(), "lcbuild", `_${processUuid}`);
@@ -574,7 +578,151 @@ export function buildSync(buildOptions?: BuildOptions): void {
   try {
     throwIfBuildOptionsObjectIsInvalid(buildOptions);
 
+    const bpName = path.basename(path.resolve(buildOptions.srcBpDirPath!));
+    const rpName = path.basename(path.resolve(buildOptions.srcRpDirPath!));
+
+    const tempBpDirPath = path.join(processTempDir, bpName);
+    const tempBpScriptsDirPath = path.join(tempBpDirPath, "scripts");
+    const tempRpDirPath = path.join(processTempDir, rpName);
+    const tempScriptsDirPath = path.join(processTempDir, "scripts");
+
+    const outputBpDirPath = path.join(buildOptions.outputDirPath!, bpName);
+    const outputRpDirPath = path.join(buildOptions.outputDirPath!, rpName);
+
+    const mcBpDir = path.join(buildOptions.comMojangDirPath!, "development_behavior_packs", bpName);
+    const mcRpDir = path.join(buildOptions.comMojangDirPath!, "development_resource_packs", rpName);
+
+    console.log(`${Colors.FgYellow}Build started...${Colors.Reset}`);
+
     fs.ensureDirSync(processTempDir);
+
+    // ----- Copy src packs to temp
+
+    copyDirectorySync(
+      path.resolve(buildOptions.srcBpDirPath!),
+      tempBpDirPath,
+      buildOptions.compilationIgnorePatterns ?? [],
+    );
+
+    copyDirectorySync(
+      path.resolve(buildOptions.srcRpDirPath!),
+      tempRpDirPath,
+      buildOptions.compilationIgnorePatterns ?? [],
+    );
+
+    // ----- Compile TypeScript
+
+    console.log("Compiling scripts...");
+
+    runCommandSync("tsc", ["--noEmit false", `--outDir ${tempScriptsDirPath}`], {
+      shell: true,
+      cwd: process.cwd(),
+    });
+
+    if (buildOptions.bundleScripts === true) {
+      console.log("Bundling compiled scripts...");
+
+      const mainFileName = `${buildOptions.entryScriptName ?? "main"}`;
+
+      esbuild.buildSync({
+        entryPoints: [path.join(tempScriptsDirPath, `${mainFileName}.js`)],
+        bundle: true,
+        minify: buildOptions.minifyBundle,
+        external: buildOptions.externalModules,
+        format: "esm",
+        outfile: path.join(tempBpScriptsDirPath, `${mainFileName}.js`),
+      });
+    } else {
+      fs.copySync(tempScriptsDirPath, tempBpScriptsDirPath);
+    }
+
+    // ----- Generate manifests
+
+    console.log("Generating manifests...");
+
+    const bpManifestTemplate: string = (function (): string {
+      if (buildOptions.bpManifestTemplateFilePath === undefined) {
+        console.log(
+          `${Colors.FgYellow}Behavior pack manifest template file was undefined. Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.BP;
+      }
+
+      if (!fs.existsSync(buildOptions.bpManifestTemplateFilePath)) {
+        console.log(
+          `${Colors.FgYellow}Behavior pack manifest template file was not found at ${buildOptions.bpManifestTemplateFilePath}
+Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.BP;
+      }
+
+      const text = fs
+        .readFileSync(buildOptions.bpManifestTemplateFilePath, { encoding: "utf-8" })
+        .toString();
+
+      return text;
+    })();
+
+    const rpManifestTemplate: string = (function (): string {
+      if (buildOptions.rpManifestTemplateFilePath === undefined) {
+        console.log(
+          `${Colors.FgYellow}Resource pack manifest template file was undefined. Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.RP;
+      }
+
+      if (!fs.existsSync(buildOptions.rpManifestTemplateFilePath)) {
+        console.log(
+          `${Colors.FgYellow}Resource pack manifest template file was not found at ${buildOptions.rpManifestTemplateFilePath}
+Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.RP;
+      }
+
+      const text = fs
+        .readFileSync(buildOptions.rpManifestTemplateFilePath, { encoding: "utf-8" })
+        .toString();
+
+      return text;
+    })();
+
+    const manifests = createManifestsFromTemplates(
+      bpManifestTemplate,
+      rpManifestTemplate,
+      buildOptions,
+    );
+
+    const bpManifestPath = path.join(tempBpDirPath, "manifest.json");
+    const rpManifestPath = path.join(tempRpDirPath, "manifest.json");
+
+    fs.writeFileSync(bpManifestPath, manifests.bp, { encoding: "utf-8" });
+    fs.writeFileSync(rpManifestPath, manifests.rp, { encoding: "utf-8" });
+
+    // ----- Copy to output directory
+
+    console.log("Copying packs to output destination...");
+
+    if (buildOptions.deletePreviousOutput === true) {
+      fs.rmSync(outputBpDirPath, { force: true, recursive: true });
+      fs.rmSync(outputRpDirPath, { force: true, recursive: true });
+    }
+
+    fs.copySync(tempBpDirPath, outputBpDirPath, { overwrite: true });
+    fs.copySync(tempRpDirPath, outputRpDirPath, { overwrite: true });
+
+    if (buildOptions.copyToMc === true) {
+      console.log("Copying packs to Minecraft...");
+
+      if (buildOptions.deletePreviousOutput === true) {
+        fs.rmSync(mcBpDir, { force: true, recursive: true });
+        fs.rmSync(mcRpDir, { force: true, recursive: true });
+      }
+
+      fs.copySync(tempBpDirPath, mcBpDir, { overwrite: true });
+      fs.copySync(tempRpDirPath, mcRpDir, { overwrite: true });
+    }
+
+    console.log(`${Colors.FgGreen}Build finished!${Colors.Reset}`);
   } catch (error) {
     if (error instanceof MessageError) {
       console.log(`${Colors.FgRed}${error}${Colors.Reset}`);
@@ -583,8 +731,14 @@ export function buildSync(buildOptions?: BuildOptions): void {
     throw error;
   } finally {
     if (fs.existsSync(processTempDir)) {
-      fs.rmSync(processTempDir);
+      fs.rmSync(processTempDir, {
+        recursive: true,
+      });
     }
+
+    const endTime = Date.now();
+
+    console.log(`Process finished in ${endTime - startTime}ms`);
   }
 }
 
