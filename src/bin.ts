@@ -112,21 +112,69 @@ class MessageError extends Error {
 }
 
 export type BuildOptions = {
+  /**
+   * Bundle behavior pack scripts into single file
+   */
   bundleScripts?: boolean;
+  /**
+   * Minify script bundle when `bundleScripts` is enabled
+   */
   minifyBundle?: boolean;
+  /**
+   * Copy compiled packs to development_behavior_packs and development_resource_packs after build process is finished
+   */
   copyToMc?: boolean;
+  /**
+   * Tells bundler to ignore packages/modules in this list
+   */
   externalModules?: string[];
+  /**
+   * Glob patterns to ignroe from pack compilation
+   */
   compilationIgnorePatterns?: string[];
+  /**
+   * Absolute path to com.mojang directory used by Minecraft
+   *
+   * It is commonly located at
+   *
+   * C:\Users\ `USERNAME` \AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang
+   */
   comMojangDirPath: string | null;
+  /**
+   * Path to behavior pack source directory
+   */
   srcBpDirPath: string | null;
+  /**
+   * Path to resource pack source directory
+   */
   srcRpDirPath: string | null;
-  srcScriptsDirPath: string | null;
+  /**
+   * Path to behavior pack manifest template file
+   */
   bpManifestTemplateFilePath?: string;
+  /**
+   * Path to resource pack manifest template file
+   */
   rpManifestTemplateFilePath?: string;
+  /**
+   * Name of the entry script file name without extension
+   */
   entryScriptName?: string;
+  /**
+   * Specify oack version in number array
+   */
   packVersionSystem?: number[];
+  /**
+   * Specify oack version in string for humans
+   */
   packVersionHuman?: string;
+  /**
+   * Path to the directory that will contain build output
+   */
   outputDirPath: string | null;
+  /**
+   * Delete existing directories and files at output destination
+   */
   deletePreviousOutput?: boolean;
 };
 
@@ -150,7 +198,6 @@ const DEFAULT_BUILD_OPTIONS: BuildOptions = {
   ),
   srcBpDirPath: null,
   srcRpDirPath: null,
-  srcScriptsDirPath: null,
   entryScriptName: "main",
   packVersionSystem: [1, 0, 0],
   packVersionHuman: "1.0.0",
@@ -336,10 +383,6 @@ function createBuildOptionsFromArgv(): BuildOptions {
         description: "Path to resource pack source directory.",
         type: "string",
       },
-      srcScriptsDirPath: {
-        description: "Path to source directory containing behavior pack scripts.",
-        type: "string",
-      },
       bpManifestTemplateFilePath: {
         description: "Path to behavior pack manifest template file.",
         type: "string",
@@ -382,6 +425,18 @@ function createBuildOptionsFromArgv(): BuildOptions {
   if ("_" in buildOptions) {
     buildOptions._ = undefined;
   }
+
+  function resolvePathProp(propName: keyof typeof buildOptions): void {
+    const val = buildOptions[propName];
+    if (typeof val !== "string") return;
+    (buildOptions[propName] as string) = path.resolve(val);
+  }
+
+  resolvePathProp("srcBpDirPath");
+  resolvePathProp("srcRpDirPath");
+  resolvePathProp("bpManifestTemplateFilePath");
+  resolvePathProp("rpManifestTemplateFilePath");
+  resolvePathProp("outputDirPath");
 
   return buildOptions;
 }
