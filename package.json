@@ -1,12 +1,12 @@
 {
-  "name": "@luckedcoronet/lcbuild",
+  "name": "lcbuild",
   "author": "Lucked Coronet",
   "description": "Minecraft addon compiler",
   "license": "MIT",
   "version": "0.1.5",
-  "homepage": "https://github.com/LuckedCoronet/lcbuild/blob/main/README.md",
+  "homepage": "https://github.com/lc-studios-mc/lcbuild/blob/main/README.md",
   "bugs": {
-    "url": "https://github.com/LuckedCoronet/lcbuild/issues",
+    "url": "https://github.com/lc-studios-mc/lcbuild/issues",
     "email": "lc45@lc-studios.net"
   },
   "keywords": [
@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/LuckedCoronet/lcbuild.git"
+    "url": "https://github.com/lc-studios-mc/lcbuild.git"
   },
   "engines": {
     "node": ">= 14.14"
