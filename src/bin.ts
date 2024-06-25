@@ -546,7 +546,27 @@ Using default template instead.${Colors.Reset}`,
     }
 
     console.log(`${Colors.FgGreen}Build finished!${Colors.Reset}`);
+
+    await runCommand(
+      "powershell",
+      [
+        "-c (New-Object Media.SoundPlayer 'C:\\Windows\\Media\\Windows Background.wav').PlaySync();",
+      ],
+      {
+        shell: true,
+      },
+    );
   } catch (error) {
+    await runCommand(
+      "powershell",
+      [
+        "-c (New-Object Media.SoundPlayer 'C:\\Windows\\Media\\Windows Foreground.wav').PlaySync();",
+      ],
+      {
+        shell: true,
+      },
+    );
+
     if (error instanceof MessageError) {
       console.log(`${Colors.FgRed}${error}${Colors.Reset}`);
       return;
@@ -723,7 +743,27 @@ Using default template instead.${Colors.Reset}`,
     }
 
     console.log(`${Colors.FgGreen}Build finished!${Colors.Reset}`);
+
+    runCommandSync(
+      "powershell",
+      [
+        "-c (New-Object Media.SoundPlayer 'C:\\Windows\\Media\\Windows Background.wav').PlaySync();",
+      ],
+      {
+        shell: true,
+      },
+    );
   } catch (error) {
+    runCommandSync(
+      "powershell",
+      [
+        "-c (New-Object Media.SoundPlayer 'C:\\Windows\\Media\\Windows Foreground.wav').PlaySync();",
+      ],
+      {
+        shell: true,
+      },
+    );
+
     if (error instanceof MessageError) {
       console.log(`${Colors.FgRed}${error}${Colors.Reset}`);
       return;
