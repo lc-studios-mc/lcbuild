@@ -127,6 +127,7 @@ export type BuildOptions = {
   packVersionSystem?: number[];
   packVersionHuman?: string;
   outputDirPath: string | null;
+  deletePreviousOutput?: boolean;
 };
 
 const TEMP_DIR_PATH = path.join(os.tmpdir(), "lcbuild");
@@ -151,8 +152,14 @@ const DEFAULT_BUILD_OPTIONS: BuildOptions = {
   srcRpDirPath: null,
   srcScriptsDirPath: null,
   entryScriptName: "main",
+  packVersionSystem: [1, 0, 0],
+  packVersionHuman: "1.0.0",
   outputDirPath: null,
 } as const;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function runCommand(
   cmd: string,
@@ -234,6 +241,40 @@ function copyDirectorySync(srcDir: string, destDir: string, ignorePatterns: stri
       fs.copySync(srcPath, destPath, { overwrite: true });
     }
   }
+}
+
+function createManifestsFromTemplates(
+  bpTemplate: string,
+  rpTemplate: string,
+  buildOptions: BuildOptions,
+): { bp: string; rp: string } {
+  const uuidBpHeader = uuidv4();
+  const uuidBpModule = uuidv4();
+  const uuidBpScript = uuidv4();
+  const uuidRpHeader = uuidv4();
+  const uuidRpModule = uuidv4();
+
+  const packVerSystem = buildOptions.packVersionSystem?.toString() ?? "1,0,0";
+  const packVerHuman = buildOptions.packVersionHuman?.toString() ?? "1.0.0";
+
+  const manifestBp = bpTemplate
+    .replaceAll("<<<UUID_HEADER>>>", uuidBpHeader)
+    .replaceAll("<<<UUID_MODULE>>>", uuidBpModule)
+    .replaceAll("<<<UUID_SCRIPT>>>", uuidBpScript)
+    .replaceAll("<<<UUID_RP_HEADER>>>", uuidRpHeader)
+    .replaceAll("<<<VERSION_SYSTEM>>>", packVerSystem)
+    .replaceAll("<<<VERSION_HUMAN>>>", packVerHuman);
+
+  const manifestRp = rpTemplate
+    .replaceAll("<<<UUID_HEADER>>>", uuidRpHeader)
+    .replaceAll("<<<UUID_MODULE>>>", uuidRpModule)
+    .replaceAll("<<<VERSION_SYSTEM>>>", packVerSystem)
+    .replaceAll("<<<VERSION_HUMAN>>>", packVerHuman);
+
+  return {
+    bp: manifestBp,
+    rp: manifestRp,
+  };
 }
 
 function throwIfBuildOptionsObjectIsInvalid(buildOptions: BuildOptions): void {
@@ -323,6 +364,10 @@ function createBuildOptionsFromArgv(): BuildOptions {
         description: "Path to the directory that will contain compiled packs.",
         type: "string",
       },
+      deletePreviousOutput: {
+        description: "Delete existing directories at output destination",
+        type: "boolean",
+      },
     })
     .parseSync();
 
@@ -342,24 +387,33 @@ function createBuildOptionsFromArgv(): BuildOptions {
 }
 
 export async function build(buildOptions?: BuildOptions): Promise<void> {
-  buildOptions = buildOptions ? buildOptions : DEFAULT_BUILD_OPTIONS;
+  buildOptions = buildOptions
+    ? Object.assign(structuredClone(DEFAULT_BUILD_OPTIONS), buildOptions)
+    : DEFAULT_BUILD_OPTIONS;
+
+  const startTime = Date.now();
 
   const processUuid = uuidv4();
   const processTempDir = path.join(os.tmpdir(), "lcbuild", `_${processUuid}`);
 
-  const tempBpDirPath = path.join(
-    processTempDir,
-    path.basename(path.resolve(buildOptions.srcBpDirPath!)),
-  );
-  const tempBpScriptsDirPath = path.join(tempBpDirPath, "scripts");
-  const tempRpDirPath = path.join(
-    processTempDir,
-    path.basename(path.resolve(buildOptions.srcRpDirPath!)),
-  );
-  const tempScriptsDirPath = path.join(processTempDir, "scripts");
-
   try {
     throwIfBuildOptionsObjectIsInvalid(buildOptions);
+
+    const bpName = path.basename(path.resolve(buildOptions.srcBpDirPath!));
+    const rpName = path.basename(path.resolve(buildOptions.srcRpDirPath!));
+
+    const tempBpDirPath = path.join(processTempDir, bpName);
+    const tempBpScriptsDirPath = path.join(tempBpDirPath, "scripts");
+    const tempRpDirPath = path.join(processTempDir, rpName);
+    const tempScriptsDirPath = path.join(processTempDir, "scripts");
+
+    const outputBpDirPath = path.join(buildOptions.outputDirPath!, bpName);
+    const outputRpDirPath = path.join(buildOptions.outputDirPath!, rpName);
+
+    const mcBpDir = path.join(buildOptions.comMojangDirPath!, "development_behavior_packs", bpName);
+    const mcRpDir = path.join(buildOptions.comMojangDirPath!, "development_resource_packs", rpName);
+
+    console.log(`${Colors.FgYellow}Build started...${Colors.Reset}`);
 
     await fs.ensureDir(processTempDir);
 
@@ -389,13 +443,15 @@ export async function build(buildOptions?: BuildOptions): Promise<void> {
     if (buildOptions.bundleScripts === true) {
       console.log("Bundling compiled scripts...");
 
+      const mainFileName = `${buildOptions.entryScriptName ?? "main"}`;
+
       await esbuild.build({
-        entryPoints: [`${buildOptions.entryScriptName ?? "main"}.js`],
+        entryPoints: [path.join(tempScriptsDirPath, `${mainFileName}.js`)],
         bundle: true,
         minify: buildOptions.minifyBundle,
         external: buildOptions.externalModules,
         format: "esm",
-        outfile: path.join(tempBpScriptsDirPath, `${buildOptions.entryScriptName ?? "main"}.js`),
+        outfile: path.join(tempBpScriptsDirPath, `${mainFileName}.js`),
       });
     } else {
       await fs.copy(tempScriptsDirPath, tempBpScriptsDirPath);
@@ -404,6 +460,92 @@ export async function build(buildOptions?: BuildOptions): Promise<void> {
     // ----- Generate manifests
 
     console.log("Generating manifests...");
+
+    const bpManifestTemplate: string = await (async function (): Promise<string> {
+      if (buildOptions.bpManifestTemplateFilePath === undefined) {
+        console.log(
+          `${Colors.FgYellow}Behavior pack manifest template file was undefined. Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.BP;
+      }
+
+      if (!(await fs.exists(buildOptions.bpManifestTemplateFilePath))) {
+        console.log(
+          `${Colors.FgYellow}Behavior pack manifest template file was not found at ${buildOptions.bpManifestTemplateFilePath}
+Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.BP;
+      }
+
+      const text = (
+        await fs.readFile(buildOptions.bpManifestTemplateFilePath, { encoding: "utf-8" })
+      ).toString();
+
+      return text;
+    })();
+
+    const rpManifestTemplate: string = await (async function (): Promise<string> {
+      if (buildOptions.rpManifestTemplateFilePath === undefined) {
+        console.log(
+          `${Colors.FgYellow}Resource pack manifest template file was undefined. Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.RP;
+      }
+
+      if (!(await fs.exists(buildOptions.rpManifestTemplateFilePath))) {
+        console.log(
+          `${Colors.FgYellow}Resource pack manifest template file was not found at ${buildOptions.rpManifestTemplateFilePath}
+Using default template instead.${Colors.Reset}`,
+        );
+        return DefaultManifestTemplates.RP;
+      }
+
+      const text = (
+        await fs.readFile(buildOptions.rpManifestTemplateFilePath, { encoding: "utf-8" })
+      ).toString();
+
+      return text;
+    })();
+
+    const manifests = createManifestsFromTemplates(
+      bpManifestTemplate,
+      rpManifestTemplate,
+      buildOptions,
+    );
+
+    const bpManifestPath = path.join(tempBpDirPath, "manifest.json");
+    const rpManifestPath = path.join(tempRpDirPath, "manifest.json");
+
+    await fs.writeFile(bpManifestPath, manifests.bp, { encoding: "utf-8" });
+    await fs.writeFile(rpManifestPath, manifests.rp, { encoding: "utf-8" });
+
+    // ----- Copy to output directory
+
+    console.log("Copying packs to output destination...");
+
+    if (buildOptions.deletePreviousOutput === true) {
+      await fs.rm(outputBpDirPath, { force: true, recursive: true });
+      await fs.rm(outputRpDirPath, { force: true, recursive: true });
+      await delay(80);
+    }
+
+    await fs.copy(tempBpDirPath, outputBpDirPath, { overwrite: true });
+    await fs.copy(tempRpDirPath, outputRpDirPath, { overwrite: true });
+
+    if (buildOptions.copyToMc === true) {
+      console.log("Copying packs to Minecraft...");
+
+      if (buildOptions.deletePreviousOutput === true) {
+        await fs.rm(mcBpDir, { force: true, recursive: true });
+        await fs.rm(mcRpDir, { force: true, recursive: true });
+        await delay(80);
+      }
+
+      await fs.copy(tempBpDirPath, mcBpDir, { overwrite: true });
+      await fs.copy(tempRpDirPath, mcRpDir, { overwrite: true });
+    }
+
+    console.log(`${Colors.FgGreen}Build finished!${Colors.Reset}`);
   } catch (error) {
     if (error instanceof MessageError) {
       console.log(`${Colors.FgRed}${error}${Colors.Reset}`);
@@ -416,6 +558,10 @@ export async function build(buildOptions?: BuildOptions): Promise<void> {
         recursive: true,
       });
     }
+
+    const endTime = Date.now();
+
+    console.log(`Process finished in ${endTime - startTime}ms`);
   }
 }
 
