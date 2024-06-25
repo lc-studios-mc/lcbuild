@@ -150,6 +150,10 @@ export type BuildOptions = {
    */
   srcRpDirPath: string | null;
   /**
+   * Path to source TypeScript file that serves as the entry point to your behavior pack scripts
+   */
+  srcScriptEntryFilePath: string | null;
+  /**
    * Path to behavior pack manifest template file
    */
   bpManifestTemplateFilePath?: string;
@@ -157,10 +161,6 @@ export type BuildOptions = {
    * Path to resource pack manifest template file
    */
   rpManifestTemplateFilePath?: string;
-  /**
-   * Name of the entry script file name without extension
-   */
-  entryScriptName?: string;
   /**
    * Specify oack version in number array
    */
@@ -178,8 +178,6 @@ export type BuildOptions = {
    */
   deletePreviousOutput?: boolean;
 };
-
-const TEMP_DIR_PATH = path.join(os.tmpdir(), "lcbuild");
 
 const DEFAULT_BUILD_OPTIONS: BuildOptions = {
   bundleScripts: true,
@@ -199,7 +197,7 @@ const DEFAULT_BUILD_OPTIONS: BuildOptions = {
   ),
   srcBpDirPath: null,
   srcRpDirPath: null,
-  entryScriptName: "main",
+  srcScriptEntryFilePath: null,
   packVersionSystem: [1, 0, 0],
   packVersionHuman: "1.0.0",
   outputDirPath: null,
@@ -306,6 +304,11 @@ function throwIfBuildOptionsObjectIsInvalid(buildOptions: BuildOptions): void {
   if (!isValidPath(path.resolve(buildOptions.srcRpDirPath)))
     throw new MessageError(`Path '${buildOptions.srcRpDirPath}' is invalid!`);
 
+  if (buildOptions.srcScriptEntryFilePath === (undefined || null))
+    throw new MessageError("Build option 'srcScriptEntryFilePath' is undefined!");
+  if (!isValidPath(path.resolve(buildOptions.srcScriptEntryFilePath)))
+    throw new MessageError(`Path '${buildOptions.srcScriptEntryFilePath}' is invalid!`);
+
   if (buildOptions.outputDirPath === (undefined || null))
     throw new MessageError("Build option 'outputDirPath' is undefined!");
   if (!isValidPath(path.resolve(buildOptions.outputDirPath)))
@@ -357,8 +360,9 @@ function createBuildOptionsFromArgv(): BuildOptions {
         description: "Path to resource pack manifest template file.",
         type: "string",
       },
-      entryScriptName: {
-        description: "Entry point script file name without extension.",
+      srcScriptEntryFilePath: {
+        description:
+          "Path to source TypeScript file that serves as the entry point to your behavior pack scripts.",
         type: "string",
       },
       packVersionSystem: {
@@ -400,6 +404,7 @@ function createBuildOptionsFromArgv(): BuildOptions {
 
   resolvePathProp("srcBpDirPath");
   resolvePathProp("srcRpDirPath");
+  resolvePathProp("srcScriptEntryFilePath");
   resolvePathProp("bpManifestTemplateFilePath");
   resolvePathProp("rpManifestTemplateFilePath");
   resolvePathProp("outputDirPath");
@@ -454,24 +459,21 @@ export async function build(buildOptions?: BuildOptions): Promise<void> {
 
     // ----- Compile TypeScript
 
-    console.log("Compiling scripts...");
-
-    await runCommand("tsc", ["--noEmit false", `--outDir ${tempScriptsDirPath}`], {
-      shell: true,
-      cwd: process.cwd(),
-    });
-
-    await tscAlias.replaceTscAliasPaths({
-      outDir: tempScriptsDirPath,
-    });
-
     if (buildOptions.bundleScripts === true) {
+      console.log("Checking TypeScript errors...");
+
+      await runCommand("tsc", ["--noEmit true"], {
+        shell: true,
+        cwd: process.cwd(),
+      });
+
       console.log("Bundling compiled scripts...");
 
-      const mainFileName = `${buildOptions.entryScriptName ?? "main"}`;
+      const entryPointFilePath = path.join(buildOptions.srcScriptEntryFilePath!);
+      const mainFileName = `${path.parse(buildOptions.srcScriptEntryFilePath!).name}`;
 
       await esbuild.build({
-        entryPoints: [path.join(tempScriptsDirPath, `${mainFileName}.js`)],
+        entryPoints: [entryPointFilePath],
         bundle: true,
         minify: buildOptions.minifyBundle,
         external: buildOptions.externalModules,
@@ -479,6 +481,17 @@ export async function build(buildOptions?: BuildOptions): Promise<void> {
         outfile: path.join(tempBpScriptsDirPath, `${mainFileName}.js`),
       });
     } else {
+      console.log("Compiling scripts...");
+
+      await runCommand("tsc", ["--noEmit false", `--outDir ${tempScriptsDirPath}`], {
+        shell: true,
+        cwd: process.cwd(),
+      });
+
+      await tscAlias.replaceTscAliasPaths({
+        outDir: tempScriptsDirPath,
+      });
+
       await fs.copy(tempScriptsDirPath, tempBpScriptsDirPath);
     }
 
